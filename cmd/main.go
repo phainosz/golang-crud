@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/phainosz/golang-crud/pkd/db"
+)
 
 func main() {
-	fmt.Println("Start")
+	db.Connect()
 }

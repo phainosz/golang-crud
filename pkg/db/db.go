@@ -8,7 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// Create the connection with database using mysql
+// Creates the database connection using mysql
 func Connect() *sql.DB {
 	connectionUrl := "myuser:mypassword@tcp(localhost:3306)/golang-crud?charset=utf8&parseTime=True&loc=Local"
 	db, err := sql.Open("mysql", connectionUrl)

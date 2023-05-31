@@ -3,24 +3,26 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 // Creates the database connection using mysql
-func Connect() *sql.DB {
-	connectionUrl := "myuser:mypassword@tcp(localhost:3306)/golang-crud?charset=utf8&parseTime=True&loc=Local"
+func Connect() (*sql.DB, error) {
+	connectionUrl := "user:123@tcp(localhost:3306)/golang_crud?charset=utf8&parseTime=True&loc=Local"
 	db, err := sql.Open("mysql", connectionUrl)
+
+	//here connection is ok
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
+	//here checks if user is correct after connection
 	if err = db.Ping(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	fmt.Println("database connected")
 
-	return db
+	return db, nil
 }

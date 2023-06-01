@@ -1,27 +1,27 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
-	"github.com/phainosz/golang-crud/pkg/db"
+	"github.com/phainosz/golang-crud/internal/config"
+	"github.com/phainosz/golang-crud/internal/models"
+	"github.com/phainosz/golang-crud/internal/repositories"
 )
 
 func main() {
-	db, err := db.Connect()
+	config.LoadEnvironmentVariables()
 
+	repositories.CreateUser(models.User{Name: "User", Email: "user@gmail.com"})
+
+	users, err := repositories.GetUsers()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
-	statement, err := db.Prepare("insert into users (name, email) values (?, ?)")
-	if err != nil {
-		log.Fatal("Error preparing statement")
-	}
-	defer statement.Close()
+	fmt.Println(users)
 
-	_, err = statement.Exec("test name", "test@gmail.com")
-	if err != nil {
-		log.Fatal("Error executing statement")
+	if err := repositories.DeleteUserById(6); err != nil {
+		log.Fatal(err)
 	}
 }

@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/phainosz/golang-crud/internal/config"
 )
 
 // Creates the database connection using mysql
 func Connect() (*sql.DB, error) {
-	connectionUrl := "user:123@tcp(localhost:3306)/golang_crud?charset=utf8&parseTime=True&loc=Local"
+	connectionUrl := config.GetDbConnection()
 	db, err := sql.Open("mysql", connectionUrl)
 
 	//here connection is ok

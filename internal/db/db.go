@@ -2,7 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phainosz/golang-crud/internal/config"
@@ -10,20 +10,20 @@ import (
 
 // Creates the database connection using mysql
 func Connect() (*sql.DB, error) {
-	connectionUrl := config.GetDbConnection()
+	connectionUrl := config.DbConnection
 	db, err := sql.Open("mysql", connectionUrl)
 
-	//here connection is ok
+	//check if connection is ok
 	if err != nil {
 		return nil, err
 	}
 
-	//here checks if user is correct after connection
+	//checks if user and password is correct after connection
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
 
-	fmt.Println("database connected")
+	log.Println("database connected")
 
 	return db, nil
 }

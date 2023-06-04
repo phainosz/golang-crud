@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"log"
 
 	"github.com/phainosz/golang-crud/internal/db"
@@ -16,19 +17,19 @@ func GetUsers() ([]models.User, error) {
 	}
 	defer db.Close()
 
-	lines, err := db.Query("select * from users")
+	rows, err := db.Query("select * from users")
 
 	if err != nil {
 		return nil, err
 	}
-	defer lines.Close()
+	defer rows.Close()
 
 	var users []models.User
 
-	for lines.Next() {
+	for rows.Next() {
 		var user models.User
 
-		if err = lines.Scan(
+		if err = rows.Scan(
 			&user.ID,
 			&user.Name,
 			&user.Email,
@@ -41,6 +42,7 @@ func GetUsers() ([]models.User, error) {
 
 }
 
+// create user
 func CreateUser(user models.User) {
 	db, err := db.Connect()
 
@@ -61,11 +63,12 @@ func CreateUser(user models.User) {
 	}
 }
 
+// delete user by id
 func DeleteUserById(ID uint64) error {
 	db, err := db.Connect()
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.Close()
 
@@ -79,4 +82,54 @@ func DeleteUserById(ID uint64) error {
 		return err
 	}
 	return nil
+}
+
+// update user by ID
+func UpdateUser(ID uint64, user models.User) error {
+	db, err := db.Connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	statement, err := db.Prepare("update users set name = ?, email = ? where id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(user.Name, user.Email, ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// find user by id
+func FindUserById(ID uint64) (models.User, error) {
+	db, err := db.Connect()
+	if err != nil {
+		return models.User{}, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("select * from users where id = ?", ID)
+	if err != nil {
+		return models.User{}, err
+	}
+	defer rows.Close()
+
+	var user models.User
+	for rows.Next() {
+
+		if err = rows.Scan(&user.ID, &user.Name, &user.Email); err != nil {
+			return models.User{}, err
+		}
+	}
+
+	if user.ID == 0 {
+		return user, errors.New("ID not found")
+	}
+
+	return user, nil
 }

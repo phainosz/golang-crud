@@ -1,23 +1,23 @@
 package repositories
 
 import (
+	"database/sql"
 	"errors"
-	"log"
 
-	"github.com/phainosz/golang-crud/internal/db"
 	"github.com/phainosz/golang-crud/internal/models"
 )
 
+type UserRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db}
+}
+
 // get all users from database
-func GetUsers() ([]models.User, error) {
-	db, err := db.Connect()
-
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
-	rows, err := db.Query("select * from users")
+func (userRepository UserRepository) GetUsers() ([]models.User, error) {
+	rows, err := userRepository.db.Query("select * from users")
 
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func GetUsers() ([]models.User, error) {
 		var user models.User
 
 		if err = rows.Scan(
-			&user.ID,
+			&user.Id,
 			&user.Name,
 			&user.Email,
 		); err != nil {
@@ -43,62 +43,43 @@ func GetUsers() ([]models.User, error) {
 }
 
 // create user
-func CreateUser(user models.User) {
-	db, err := db.Connect()
-
+func (userRepository UserRepository) CreateUser(user models.User) error {
+	statement, err := userRepository.db.Prepare("insert into users (name, email) values (?, ?)")
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	statement, err := db.Prepare("insert into users (name, email) values (?, ?)")
-	if err != nil {
-		log.Fatal("Error preparing statement")
+		return err
 	}
 	defer statement.Close()
 
 	_, err = statement.Exec(user.Name, user.Email)
 	if err != nil {
-		log.Fatal("Error executing statement")
-	}
-}
-
-// delete user by id
-func DeleteUserById(ID uint64) error {
-	db, err := db.Connect()
-
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	statement, err := db.Prepare("delete from users where id = ?")
-	if err != nil {
-		return err
-	}
-	defer statement.Close()
-
-	if _, err := statement.Exec(ID); err != nil {
 		return err
 	}
 	return nil
 }
 
-// update user by ID
-func UpdateUser(ID uint64, user models.User) error {
-	db, err := db.Connect()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	statement, err := db.Prepare("update users set name = ?, email = ? where id = ?")
+// delete user by id
+func (userRepository UserRepository) DeleteUserById(id uint64) error {
+	statement, err := userRepository.db.Prepare("delete from users where id = ?")
 	if err != nil {
 		return err
 	}
 	defer statement.Close()
 
-	if _, err = statement.Exec(user.Name, user.Email, ID); err != nil {
+	if _, err := statement.Exec(id); err != nil {
+		return err
+	}
+	return nil
+}
+
+// update user by id
+func (userRepository UserRepository) UpdateUser(id uint64, user models.User) error {
+	statement, err := userRepository.db.Prepare("update users set name = ?, email = ? where id = ?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err = statement.Exec(user.Name, user.Email, id); err != nil {
 		return err
 	}
 
@@ -106,14 +87,8 @@ func UpdateUser(ID uint64, user models.User) error {
 }
 
 // find user by id
-func FindUserById(ID uint64) (models.User, error) {
-	db, err := db.Connect()
-	if err != nil {
-		return models.User{}, err
-	}
-	defer db.Close()
-
-	rows, err := db.Query("select * from users where id = ?", ID)
+func (userRepository UserRepository) FindUserById(id uint64) (models.User, error) {
+	rows, err := userRepository.db.Query("select * from users where id = ?", id)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -122,13 +97,13 @@ func FindUserById(ID uint64) (models.User, error) {
 	var user models.User
 	for rows.Next() {
 
-		if err = rows.Scan(&user.ID, &user.Name, &user.Email); err != nil {
+		if err = rows.Scan(&user.Id, &user.Name, &user.Email); err != nil {
 			return models.User{}, err
 		}
 	}
 
-	if user.ID == 0 {
-		return user, errors.New("ID not found")
+	if user.Id == 0 {
+		return user, errors.New("id not found")
 	}
 
 	return user, nil

@@ -14,7 +14,7 @@ var (
 	ServerPort   = 0
 )
 
-// loads all environment variables using dotenv
+// loads all environment variables
 func LoadEnvironmentVariables() {
 	var err error
 	if err = godotenv.Load(".env"); err != nil {

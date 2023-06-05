@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -14,7 +14,7 @@ import (
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.WriteErrorResponse(w, http.StatusUnprocessableEntity, utils.ErrorResponse{Error: err.Error()})
 		return
@@ -62,7 +62,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.WriteErrorResponse(w, http.StatusUnprocessableEntity, utils.ErrorResponse{Error: err.Error()})
 		return

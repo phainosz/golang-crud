@@ -88,18 +88,15 @@ func (userRepository UserRepository) UpdateUser(id uint64, user models.User) err
 
 // find user by id
 func (userRepository UserRepository) FindUserById(id uint64) (models.User, error) {
-	rows, err := userRepository.db.Query("select * from users where id = ?", id)
-	if err != nil {
-		return models.User{}, err
-	}
-	defer rows.Close()
+	rows := userRepository.db.QueryRow("select * from users where id = ?", id)
 
 	var user models.User
-	for rows.Next() {
 
-		if err = rows.Scan(&user.Id, &user.Name, &user.Email); err != nil {
-			return models.User{}, err
+	if err := rows.Scan(&user.Id, &user.Name, &user.Email); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return user, errors.New("id not found")
 		}
+		return models.User{}, err
 	}
 
 	if user.Id == 0 {

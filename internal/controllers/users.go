@@ -136,7 +136,7 @@ func FindUserById(w http.ResponseWriter, r *http.Request) {
 	userRepository := repositories.NewUserRepository(db)
 	user, err := userRepository.FindUserById(id)
 	if err != nil {
-		utils.WriteErrorResponse(w, http.StatusBadRequest, utils.ErrorResponse{Error: err.Error()})
+		utils.WriteErrorResponse(w, http.StatusNotFound, utils.ErrorResponse{Error: err.Error()})
 		return
 	}
 

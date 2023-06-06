@@ -45,12 +45,14 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	db, err := db.Connect()
 	if err != nil {
 		utils.WriteErrorResponse(w, http.StatusInternalServerError, utils.ErrorResponse{Error: err.Error()})
+		return
 	}
 	defer db.Close()
 	userRepository := repositories.NewUserRepository(db)
 	users, err := userRepository.GetUsers()
 	if err != nil {
 		utils.WriteErrorResponse(w, http.StatusInternalServerError, utils.ErrorResponse{Error: err.Error()})
+		return
 	}
 
 	if len(users) <= 0 {

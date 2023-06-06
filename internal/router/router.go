@@ -1,7 +1,6 @@
 package router
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -16,7 +15,7 @@ func NewRouter() *chi.Mux {
 
 	router.Use(middleware.Logger)
 	router.Use(middleware.Heartbeat("/"))
-	router.Use(recoverer)
+	router.Use(recoverer) //best to use middleware.Recoverer
 
 	routes.Config(router)
 	return router
@@ -24,22 +23,23 @@ func NewRouter() *chi.Mux {
 
 // recover function to handle panic errors
 func recoverer(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			err := recover()
 
 			if err != nil {
 				log.Println("Error: ", err)
-				jsonBody, _ := json.Marshal(map[string]string{
-					"error": "There was an internal server error",
-				})
 
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(jsonBody)
+
+				response := `{"error": "unexpected error."}`
+
+				w.Write([]byte(response))
 			}
 		}()
 		handler.ServeHTTP(w, r)
-	})
+	}
 
+	return http.HandlerFunc(fn)
 }

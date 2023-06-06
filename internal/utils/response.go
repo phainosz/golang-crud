@@ -28,9 +28,9 @@ func WriteSuccessResponse(w http.ResponseWriter, httpStatus int, response any) {
 	w.WriteHeader(httpStatus)
 
 	if response != nil {
-		if erro := json.NewEncoder(w).Encode(response); erro != nil {
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"message": "error handling response."}`))
+			w.Write([]byte(`{"error": "error handling response."}`))
 		}
 	}
 }

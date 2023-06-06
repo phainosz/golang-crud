@@ -89,6 +89,9 @@ func (userRepository UserRepository) UpdateUser(id uint64, user models.User) err
 // find user by id
 func (userRepository UserRepository) FindUserById(id uint64) (models.User, error) {
 	rows := userRepository.db.QueryRow("select * from users where id = ?", id)
+	if err := rows.Err(); err != nil {
+		return models.User{}, err
+	}
 
 	var user models.User
 
@@ -97,10 +100,6 @@ func (userRepository UserRepository) FindUserById(id uint64) (models.User, error
 			return user, errors.New("id not found")
 		}
 		return models.User{}, err
-	}
-
-	if user.Id == 0 {
-		return user, errors.New("id not found")
 	}
 
 	return user, nil

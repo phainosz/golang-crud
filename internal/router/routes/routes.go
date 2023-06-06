@@ -21,4 +21,10 @@ func Config(r *chi.Mux) {
 	for _, route := range routes {
 		r.MethodFunc(route.Method, route.Uri, route.Function)
 	}
+
+	r.Get("/err", examplePanic)
+}
+
+func examplePanic(w http.ResponseWriter, r *http.Request) {
+	panic("oh no")
 }

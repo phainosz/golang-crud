@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -31,9 +32,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		utils.WriteErrorResponse(w, http.StatusInternalServerError, utils.ErrorResponse{Error: err.Error()})
 	}
 	defer db.Close()
-	userRepository := repositories.NewUserRepository(db)
+	repository := repositories.New(repositories.ConnectionOption{ConnectionSql: db})
 
-	if err = userRepository.CreateUser(user); err != nil {
+	if err = repository.User.CreateUser(context.Background(), user); err != nil {
 		utils.WriteErrorResponse(w, http.StatusInternalServerError, utils.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -48,8 +49,8 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Close()
-	userRepository := repositories.NewUserRepository(db)
-	users, err := userRepository.GetUsers()
+	repository := repositories.New(repositories.ConnectionOption{ConnectionSql: db})
+	users, err := repository.User.GetUsers(context.Background())
 	if err != nil {
 		utils.WriteErrorResponse(w, http.StatusInternalServerError, utils.ErrorResponse{Error: err.Error()})
 		return
@@ -89,8 +90,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	userRepository := repositories.NewUserRepository(db)
-	if err = userRepository.UpdateUser(id, user); err != nil {
+	repository := repositories.New(repositories.ConnectionOption{ConnectionSql: db})
+	if err = repository.User.UpdateUser(context.Background(), id, user); err != nil {
 		utils.WriteErrorResponse(w, http.StatusBadRequest, utils.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -112,8 +113,8 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	userRepository := repositories.NewUserRepository(db)
-	if err = userRepository.DeleteUserById(id); err != nil {
+	repository := repositories.New(repositories.ConnectionOption{ConnectionSql: db})
+	if err = repository.User.DeleteUserById(context.Background(), id); err != nil {
 		utils.WriteErrorResponse(w, http.StatusBadRequest, utils.ErrorResponse{Error: err.Error()})
 		return
 	}
@@ -135,8 +136,8 @@ func FindUserById(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	userRepository := repositories.NewUserRepository(db)
-	user, err := userRepository.FindUserById(id)
+	repository := repositories.New(repositories.ConnectionOption{ConnectionSql: db})
+	user, err := repository.User.FindUserById(context.Background(), id)
 	if err != nil {
 		utils.WriteErrorResponse(w, http.StatusNotFound, utils.ErrorResponse{Error: err.Error()})
 		return
